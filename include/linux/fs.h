@@ -1323,7 +1323,8 @@ struct super_block {
 
 	/* Being remounted read-only */
 	int s_readonly_remount;
-         /*
+
+	/*
 	 * Indicates how deep in a filesystem stack this SB is
 	 */
 	int s_stack_depth;
