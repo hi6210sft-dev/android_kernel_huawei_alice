@@ -51,7 +51,7 @@
 #define DEV_NAME_MIPI2RGB		    "mipi2rgb"
 #define DEV_NAME_MIPIDSI			"mipi_dsi"
 #define DEV_NAME_FB				    "balong_fb"
-#define DEV_NAME_LCD_BKL		    "lcd_backlight0"
+#define DEV_NAME_LCD_BKL		    "lcd-backlight"
 
 #define VCC_BACKLIGHT_NAME		"lcd_backlight"
 #define VCC_LCDBIAS_NAME		"vcc_lcdbias"
