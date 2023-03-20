@@ -93,7 +93,7 @@ static int is_recorded(int action_type)
 }
 static int get_ro_secure(void)
 {
-    int ro_secue = 0;
+/*    int ro_secue = 0;
     int ret = 0;
     mm_segment_t old_fs;
     char buf_line[LOG_LINE_LEN];
@@ -121,11 +121,13 @@ static int get_ro_secure(void)
     }
     set_fs(old_fs);
     filp_close(filp,NULL);
-    return ro_secue;
+    return ro_secue; */
+    return 0;
 }
+
 static int umh_exec_ckrt( void )
 {
-    
+/*
     int ret = 0;
     mm_segment_t old_fs;
     char* chrt_sys = "/system/bin/check_root";
@@ -170,7 +172,7 @@ static int umh_exec_ckrt( void )
     }
     
     printk(KERN_WARNING "umh_exec_ckrt-\n");
-    
+    */
     return 0;
 }  
 
@@ -512,9 +514,7 @@ void check_setuid(int act_flag)
 
 static int __init dcheckroot_init(void)
 {
-    checkroot_ref.ro_sec = get_ro_secure();
-    mutex_init(&(checkroot_ref.drt_mutex));
-	return 0;
+    return 0;
 }
 late_initcall(dcheckroot_init);
 
