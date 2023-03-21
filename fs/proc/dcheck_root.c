@@ -512,8 +512,147 @@ void check_setuid(int act_flag)
     }
 }
 
+// Function to write to the desired file.
+// Uses filp_open, vfs_write, and filp_close.
+int write_file(char *path, char *buf) {
+    int ret = -1;
+    struct file* filp;
+
+    printk(KERN_ERR "%s: Writing to file %s...\n", __func__, path);
+
+    filp = filp_open(path, O_WRONLY|O_CREAT, 0644);
+    if (IS_ERR(filp)) {
+        printk(KERN_ERR "%s: Failed to open file %s (%ld)!\n", __func__, path, PTR_ERR(filp));
+        return -1;
+    }
+
+    ssize_t b = vfs_write(filp, buf, strlen(buf), &filp->f_pos);
+    if (strlen(buf) != b) {
+        printk(KERN_ERR "%s: Failed to write to file %s (%ld)!\n", __func__, path, b);
+        return -1;
+    }
+
+    filp_close(filp, NULL);
+    return 0;
+}
+
+int setup_fake_dtfstab(void) {
+    int ret = -1;
+
+    printk(KERN_ERR "%s: Creating fake dtfstab...\n", __func__);
+
+    // Create the basic structure. We want to create a mock of /proc/device-tree.
+    ret = sys_mkdir("/dev/device-tree", 0777);
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    ret = sys_mkdir("/dev/device-tree/fstab", 0777);
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    ret = sys_mkdir("/dev/device-tree/fstab/system", 0777);
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `bootdevice` file (hi_mci.0).
+    ret = write_file("/dev/device-tree/bootdevice", "hi_mci.0");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/bootdevice (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `name` file (android).
+    ret = write_file("/dev/device-tree/name", "android");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/name (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `compatible` file (android,firmware).
+    ret = write_file("/dev/device-tree/compatible", "android,firmware");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/compatible (%d)!\n", __func__, ret);
+    }
+
+    // Create `fstab/name` file (fstab).
+    ret = write_file("/dev/device-tree/fstab/name", "fstab");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/name (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/compatible` file (android,fstab).
+    ret = write_file("/dev/device-tree/fstab/compatible", "android,fstab");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/compatible (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/compatible` file (android,system).
+    ret = write_file("/dev/device-tree/fstab/system/compatible", "android,system");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/compatible (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/dev` file (mmcblk0p38).
+    ret = write_file("/dev/device-tree/fstab/system/dev", "mmcblk0p38");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/dev (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/fsmgr_flags` file (wait,check).
+    ret = write_file("/dev/device-tree/fstab/system/fsmgr_flags", "wait,check");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/fsmgr_flags (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/mnt_flags` file (ro,barrier=1).
+    ret = write_file("/dev/device-tree/fstab/system/mnt_flags", "ro,barrier=1");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/mnt_flags (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/name` file (system).
+    ret = write_file("/dev/device-tree/fstab/system/name", "system");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/name (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/status` file (ok).
+    ret = write_file("/dev/device-tree/fstab/system/status", "ok");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/status (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    // Create `fstab/system/type` file (ext4).
+    ret = write_file("/dev/device-tree/fstab/system/type", "ext4");
+    if (ret < 0) {
+        printk(KERN_ERR "%s: Failed to create /dev/device-tree/fstab/system/type (%d)!\n", __func__, ret);
+        return ret;
+    }
+
+    return 0;
+}
+
 static int __init dcheckroot_init(void)
 {
+    if (setup_fake_dtfstab() < 0) {
+        printk(KERN_ERR "%s: Failed to setup fake dtfstab!\n", __func__);
+    } else {
+        printk(KERN_ERR "%s: Successfully setup fake dtfstab!\n", __func__);
+    }
     return 0;
 }
 late_initcall(dcheckroot_init);
