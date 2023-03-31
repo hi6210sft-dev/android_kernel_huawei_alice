@@ -572,5 +572,5 @@ error:
 	if(operation){
 		free_operation(client_context, operation, local_temp_buffer);
 	}
-	return ret;
+	return 0;
 }
