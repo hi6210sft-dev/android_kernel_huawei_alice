@@ -441,18 +441,20 @@ static int hall_probe(struct platform_device *pdev)
 	hall_dev->cdev=ak8789_hall_cdev;
 	hall_dev->cdev.sensors_enable=hall_ak8789_enable_set;
 	hall_dev->cdev.sensors_poll_delay=NULL;
-	err = sensors_classdev_register(&pdev->dev, &hall_dev->cdev);
+	/* err = sensors_classdev_register(&pdev->dev, &hall_dev->cdev);
 	if (err) 
       {
 	    gs_ERR("[GS]unable to register sensors_classdev: %d\n",err);
-	}
+	}*/
 	hall_INFO("[hall][%s] hall probe success!\n",__func__);
 	return ret;
 
 sysfs_create_group_err:
 hall_request_irq_err:
 input_register_fail:
+/*
 	input_free_device(hall_dev->hw_input_hall);
+*/
 input_err:
 dts_parse_err:
 	if( hall_dev->ops && hall_dev->ops->hall_release)
